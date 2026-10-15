@@ -18,4 +18,5 @@ The camera only works on `localhost` or over HTTPS, so the phone needs the hoste
 
 ## Updating
 
-Bump `VERSION` in `sw.js` whenever a file changes, so installed copies pick up the new version.
+Whenever a file changes, bump `VERSION` in `sw.js` and the `?v=` number on `styles.css`, `app.js` (in `index.html`)
+and `merge.js` (in `app.js`), so phones never mix old and new files.

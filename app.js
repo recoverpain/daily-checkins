@@ -1,6 +1,6 @@
 // Check-ins: record short clips through the day, merge them into one vertical video.
 // Everything stays on the phone (IndexedDB). Merging is done in merge.js.
-import { mergeClips } from './merge.js';
+import { mergeClips } from './merge.js?v=3';
 
 const $ = (id) => document.getElementById(id);
 
