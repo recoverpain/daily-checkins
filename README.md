@@ -8,7 +8,8 @@ them into one vertical video in the Library.
 - Merging copies the recorded video without re-encoding (`merge.js`, using the vendored Mediabunny 1.60.0).
   If the clips differ in format or size, it falls back to playing them into a canvas and recording that,
   which takes as long as the clips themselves.
-- Save to Photos uses the iPhone share sheet ("Save Video").
+- After Finish and Merge, the separate clips are removed and a card offers Save to Photos (the iPhone share sheet, "Save Video").
+  A web app cannot write to Photos without that one tap. The Library marks each video as saved or not yet saved.
 
 ## Run locally
 

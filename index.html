@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
 
@@ -143,8 +143,22 @@
   </div>
 </div>
 
+<!-- Shown after Finish and Merge -->
+<div class="ready" id="ready" hidden>
+  <div class="ready-card" role="dialog" aria-labelledby="readyTitle">
+    <span class="ready-check" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <p class="ready-title" id="readyTitle"></p>
+    <p class="ready-meta" id="readyMeta"></p>
+    <button class="primary-btn" id="readySave" type="button">Save to Photos</button>
+    <p class="ready-hint">Then tap <strong>Save Video</strong> in the menu that opens.</p>
+    <button class="ghost-btn" id="readyLater" type="button">Not now</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script type="module" src="app.js?v=3"></script>
+<script type="module" src="app.js?v=4"></script>
 </body>
 </html>

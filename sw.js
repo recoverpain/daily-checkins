@@ -1,8 +1,8 @@
 // Offline support: the app files are cached on first visit, so the app opens without a connection.
 // Bump VERSION (and the ?v= on styles.css and app.js in index.html) whenever a file changes.
-const VERSION = 'checkins-v4';
+const VERSION = 'checkins-v5';
 const FILES = [
-  './', 'index.html', 'styles.css?v=3', 'app.js?v=3', 'merge.js', 'manifest.webmanifest',
+  './', 'index.html', 'styles.css?v=4', 'app.js?v=4', 'merge.js', 'manifest.webmanifest',
   'vendor/mediabunny.min.mjs', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 

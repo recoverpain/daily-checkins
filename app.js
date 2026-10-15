@@ -414,7 +414,7 @@ async function finishDay(day) {
     });
     $('merging').hidden = true;
     show('library');
-    toast('Saved to Library');
+    showReady(video);
   } catch (err) {
     console.error(err);
     $('merging').hidden = true;
@@ -451,7 +451,7 @@ function deleteButton(onDelete) {
   return b;
 }
 
-function row({ thumb, title, meta, onOpen, onDelete }) {
+function row({ thumb, title, meta, note, noteClass, onOpen, onDelete }) {
   const r = document.createElement('div');
   r.className = 'row';
   const main = document.createElement('button');
@@ -470,6 +470,12 @@ function row({ thumb, title, meta, onOpen, onDelete }) {
   m.className = 'row-meta';
   m.textContent = meta;
   text.append(t, m);
+  if (note) {
+    const n = document.createElement('span');
+    n.className = `row-note ${noteClass || ''}`;
+    n.textContent = note;
+    text.append(n);
+  }
   main.append(img, text);
   main.addEventListener('click', onOpen);
   r.append(main);
@@ -548,10 +554,13 @@ async function renderLibrary() {
     const part = sameDay.length > 1 ? sameDay.indexOf(v) + 1 : 0;
     const title = fmtDayLong(v.day);
     const meta = `${plural(v.clipCount, 'check-in')} · ${fmtDur(v.duration)}${part ? ` · Part ${part}` : ''}`;
+    const saved = v.savedAt ? 'Saved to Photos' : 'Not saved to Photos yet';
     list.append(row({
       thumb: v.thumb,
       title,
       meta,
+      note: saved,
+      noteClass: v.savedAt ? 'is-saved' : 'is-unsaved',
       onOpen: () => openPlayer('videos', v, title, meta),
     }));
   }
@@ -584,25 +593,64 @@ function closePlayer() {
 }
 $('playerClose').addEventListener('click', closePlayer);
 
+// Opens the share sheet, where iPhone has "Save Video" (it puts the video in Photos). A web app cannot write to
+// Photos by itself, and iOS only opens the share sheet from a tap, so this must run inside a click handler.
+// Returns true when the video was shared or downloaded, false when the sheet was closed without saving.
+async function saveToPhotos(store, item) {
+  const ext = (item.type || item.blob.type).includes('webm') ? 'webm' : 'mp4';
+  const name = `Check-ins ${item.day}${store === 'clips' ? ` ${fmtTime(item.createdAt).replace(/[: ]/g, '')}` : ''}.${ext}`;
+  const file = new File([item.blob], name, { type: item.type || item.blob.type });
+  let saved = false;
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      saved = true;
+    } catch (err) {
+      if (err?.name !== 'AbortError') toast('Could not open the share sheet', false);
+    }
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = name;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+    saved = true;
+  }
+  if (saved && store === 'videos') {
+    item.savedAt = Date.now();
+    await putItem('videos', item).catch(() => {});
+  }
+  return saved;
+}
+
 $('playerSave').addEventListener('click', async () => {
   if (!playing) return;
-  const { item } = playing;
-  const ext = (item.type || item.blob.type).includes('webm') ? 'webm' : 'mp4';
-  const name = `Check-ins ${item.day}${playing.store === 'clips' ? ` ${fmtTime(item.createdAt).replace(/[: ]/g, '')}` : ''}.${ext}`;
-  const file = new File([item.blob], name, { type: item.type || item.blob.type });
-  // On iPhone the share sheet has "Save Video", which puts it in Photos.
-  if (navigator.canShare?.({ files: [file] })) {
-    try { await navigator.share({ files: [file] }); } catch (err) { if (err?.name !== 'AbortError') toast('Could not open the share sheet', false); }
-    return;
-  }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(file);
-  a.download = name;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+  if (await saveToPhotos(playing.store, playing.item)) toast('Saved');
 });
+
+// ---------- "Your day is ready" card, shown after Finish and Merge ----------
+let readyVideo = null;
+function showReady(video) {
+  readyVideo = video;
+  $('readyTitle').textContent = `${fmtDayShort(video.day)} is ready`;
+  $('readyMeta').textContent = `${plural(video.clipCount, 'check-in')} merged into one ${fmtDur(video.duration)} video. The separate clips were removed.`;
+  $('ready').hidden = false;
+}
+function hideReady() {
+  $('ready').hidden = true;
+  readyVideo = null;
+  if (current === 'library') renderLibrary();
+}
+$('readySave').addEventListener('click', async () => {
+  if (!readyVideo) return;
+  if (await saveToPhotos('videos', readyVideo)) {
+    hideReady();
+    toast('Saved to Photos');
+  }
+});
+$('readyLater').addEventListener('click', hideReady);
 
 let playerDeleteArmed = false, playerDeleteTimer;
 function resetPlayerDelete() {
