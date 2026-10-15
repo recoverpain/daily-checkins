@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Check-ins</title>
+<meta name="description" content="Record short check-ins through the day and merge them into one vertical video.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Check-ins">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f3f4f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0e12" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Home -->
+<section id="home" class="screen home">
+  <header class="home-head">
+    <p class="eyebrow" id="homeYear"></p>
+    <h1 id="homeDate"></h1>
+    <p class="home-status" id="homeStatus"></p>
+  </header>
+
+  <nav class="apps" aria-label="Main">
+    <button class="app" id="openRecord" type="button">
+      <span class="app-icon icon-rec" aria-hidden="true">
+        <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="15" fill="none" stroke="#fff" stroke-width="3"/><circle cx="24" cy="24" r="9.5" fill="#fff"/></svg>
+      </span>
+      <span class="app-label">Record</span>
+    </button>
+    <button class="app" id="openToday" type="button">
+      <span class="app-icon icon-today" aria-hidden="true">
+        <svg viewBox="0 0 48 48"><rect x="11" y="9" width="26" height="30" rx="5" fill="none" stroke="#fff" stroke-width="3"/><path d="M17 18h14M17 24h14M17 30h8" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+        <span class="badge" id="todayBadge" hidden>0</span>
+      </span>
+      <span class="app-label">Today</span>
+    </button>
+    <button class="app" id="openLibrary" type="button">
+      <span class="app-icon icon-lib" aria-hidden="true">
+        <svg viewBox="0 0 48 48"><rect x="9" y="14" width="30" height="24" rx="4" fill="none" stroke="#fff" stroke-width="3"/><path d="M14 9h20" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M21 21.5v9l7.5-4.5z" fill="#fff"/></svg>
+      </span>
+      <span class="app-label">Library</span>
+    </button>
+  </nav>
+
+  <section class="dayline" aria-label="Today's check-ins">
+    <div class="dayline-track" id="daylineTrack"></div>
+    <div class="dayline-scale"><span>4 am</span><span>Noon</span><span>8 pm</span><span>4 am</span></div>
+  </section>
+</section>
+
+<!-- Camera -->
+<section id="camera" class="screen camera" hidden>
+  <video id="preview" class="cam-video mirror" playsinline muted autoplay></video>
+  <video id="review" class="cam-video" playsinline loop hidden></video>
+
+  <div class="cam-top">
+    <button class="cam-icon" id="camClose" type="button" aria-label="Close camera">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+    <div class="rec-timer" id="recTimer" hidden><span class="rec-dot"></span><span id="recTime">0:00</span></div>
+    <button class="cam-icon" id="camFlip" type="button" aria-label="Switch camera">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h2l1.6-2h5.8l1.6 2h2A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><path d="M9 12.5a3 3 0 0 1 5.2-2M15 12.5a3 3 0 0 1-5.2 2"/><path d="M14.2 8.8v1.8h-1.8M9.8 16.2v-1.8h1.8"/></svg>
+    </button>
+  </div>
+
+  <p class="cam-msg" id="camMsg" hidden></p>
+
+  <div class="cam-bottom">
+    <div class="cam-live" id="camLive">
+      <p class="cam-count" id="camCount"></p>
+      <button class="rec-btn" id="recBtn" type="button" aria-label="Start recording"><span></span></button>
+    </div>
+    <div class="cam-review" id="camReview" hidden>
+      <button class="round-btn" id="discardBtn" type="button" aria-label="Discard and record again">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+      </button>
+      <button class="merge-btn" id="mergeBtn" type="button">Finish and Merge</button>
+      <button class="round-btn ok" id="keepBtn" type="button" aria-label="Save check-in">
+        <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Today -->
+<section id="today" class="screen list-screen" hidden>
+  <header class="bar">
+    <button class="back" type="button" data-back aria-label="Back">
+      <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <h2>Today</h2>
+    <span class="bar-spacer"></span>
+  </header>
+  <div class="list" id="todayList"></div>
+  <div class="list-foot" id="todayFoot" hidden>
+    <button class="primary-btn" id="todayMergeBtn" type="button">Finish and Merge</button>
+  </div>
+</section>
+
+<!-- Library -->
+<section id="library" class="screen list-screen" hidden>
+  <header class="bar">
+    <button class="back" type="button" data-back aria-label="Back">
+      <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <h2>Library</h2>
+    <span class="bar-spacer"></span>
+  </header>
+  <div class="list" id="libraryList"></div>
+</section>
+
+<!-- Player -->
+<section id="player" class="screen player" hidden>
+  <header class="player-top">
+    <button class="cam-icon" id="playerClose" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="player-title">
+      <strong id="playerTitle"></strong>
+      <span id="playerMeta"></span>
+    </div>
+    <span class="bar-spacer"></span>
+  </header>
+  <video id="playerVideo" playsinline controls></video>
+  <div class="player-actions">
+    <button class="ghost-btn danger" id="playerDelete" type="button">Delete</button>
+    <button class="primary-btn" id="playerSave" type="button">Save to Photos</button>
+  </div>
+</section>
+
+<!-- Merging overlay -->
+<div class="merging" id="merging" hidden>
+  <div class="merging-card">
+    <p class="merging-title" id="mergingTitle">Merging check-ins</p>
+    <div class="progress"><span id="mergingBar"></span></div>
+    <p class="merging-note" id="mergingNote">Keep the app open until it finishes.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
