@@ -1,4 +1,4 @@
-/* Layout: one-screen phone app. Home is a large-title date over three app tiles and a 4am-to-4am day line;
+/* Layout: one-screen phone app. Home is a large-title date over three app tiles and a midnight-to-midnight day line;
    camera and player are full-bleed black; lists are iOS-style rows. */
 :root {
   --bg: #f3f4f7;

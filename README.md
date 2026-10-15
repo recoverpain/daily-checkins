@@ -4,7 +4,7 @@ A home-screen web app for iPhone: record short check-ins through the day, then t
 them into one vertical video in the Library.
 
 - Everything stays on the phone (IndexedDB). Nothing is uploaded.
-- A day runs from 4 am to 4 am, so a check-in after midnight still counts for the evening before.
+- A new day starts at midnight, by the phone's clock.
 - Merging copies the recorded video without re-encoding (`merge.js`, using the vendored Mediabunny 1.60.0).
   If the clips differ in format or size, it falls back to playing them into a canvas and recording that,
   which takes as long as the clips themselves.

@@ -2,14 +2,11 @@
 // Everything stays on the phone (IndexedDB). Merging is done in merge.js.
 import { mergeClips } from './merge.js';
 
-// A "day" runs from 4 am to 4 am, so a check-in just after midnight still counts for the evening before.
-const DAY_STARTS_AT_HOUR = 4;
-
 const $ = (id) => document.getElementById(id);
 
 // ---------- Dates ----------
 function dayKey(ts = Date.now()) {
-  const d = new Date(ts - DAY_STARTS_AT_HOUR * 3600e3);
+  const d = new Date(ts); // a new day starts at midnight, phone time
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 function dayDate(key) {
@@ -123,11 +120,14 @@ async function renderHome() {
     status.textContent = merged ? 'Today is merged and in your Library' : 'No check-ins yet today';
   }
 
-  // Day line: 4 am on the left, 4 am the next day on the right.
+  // Day line: midnight on the left, the next midnight on the right.
   const track = $('daylineTrack');
   track.textContent = '';
-  const start = dayDate(today).getTime() + DAY_STARTS_AT_HOUR * 3600e3;
-  const pos = (ts) => `${Math.min(100, Math.max(0, ((ts - start) / 864e5) * 100))}%`;
+  const midnight = dayDate(today);
+  const start = midnight.getTime();
+  midnight.setDate(midnight.getDate() + 1);
+  const end = midnight.getTime(); // 23 or 25 hours on clock-change days
+  const pos = (ts) => `${Math.min(100, Math.max(0, ((ts - start) / (end - start)) * 100))}%`;
   const now = document.createElement('span');
   now.className = 'dayline-now';
   now.style.left = pos(Date.now());
@@ -144,7 +144,7 @@ $('openRecord').addEventListener('click', openCamera);
 $('openToday').addEventListener('click', () => show('today'));
 $('openLibrary').addEventListener('click', () => show('library'));
 
-// The date changes at 4 am even if the app stays open; refresh when it comes back to the foreground.
+// The date changes at midnight even if the app stays open; refresh when it comes back to the foreground.
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && current === 'home') renderHome();
 });
